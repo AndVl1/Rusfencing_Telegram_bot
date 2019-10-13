@@ -1,11 +1,11 @@
 package main
 
 import (
+	parse "Rusfencing_Telegram_bot/Parse"
 	"fmt"
 	tgbotapi "github.com/Syfaro/telegram-bot-api"
 	"log"
 	"os"
-	parse "rfgTgBot/Parse"
 	"strconv"
 )
 
@@ -28,15 +28,23 @@ func main() {
 		}
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		toSend := ""
+		toSend2 := ""
 		//uID := update.Message.From.ID
-		if update.Message.Text == "/results" {
-			toSend = getAllCompsResults()
-		} else if i, err := strconv.Atoi(update.Message.Text); err != nil {
-			toSend = getResultByLink(resMap[i].Link)
+		if update.Message.Text == "/start" {
+			toSend = "Нажмите /results, далее введите номер интересующего турнира"
+		} else if update.Message.Text == "/results" {
+			toSend = getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"
+		} else if i, err := strconv.Atoi(update.Message.Text); err == nil {
+			toSend, toSend2 = getResultByLink(resMap[i-1].Link)
 		}
+		msg.DisableWebPagePreview = true
 		msg.Text = toSend
+		msg.ParseMode = "HTML"
 		_, _ = bot.Send(msg)
-		msg.Text = "\n\nВведите номер турнира, результат которого вам интересен"
+		if toSend2 != "" {
+			msg.Text = toSend2
+			_, _ = bot.Send(msg)
+		}
 	}
 }
 
@@ -47,16 +55,24 @@ func getAllCompsResults() string {
 		resMap[i] = v
 	}
 	for i := 0; i < len(resMap); i++ {
-		toSend += fmt.Sprintf("%d: %s %s\n\n", i+1, resMap[i].Title, resMap[i].Categs)
+		toSend += fmt.Sprintf("%d. %s %s\n\n", i+1, resMap[i].Title, resMap[i].Categs)
 	}
 	return toSend
 }
 
-func getResultByLink(link string) string {
+func getResultByLink(link string) (string, string) {
 	res := parse.ParseResults(link)
 	toSend := ""
-	for i, v := range res {
-		toSend += fmt.Sprintf("%d: %s (rusfencing.ru%s)\n", i+1, v.Name, v.Link)
+	toSend2 := ""
+	if res == nil {
+		return fmt.Sprintf("Командные соревнования пока не получается смотреть. Вот вам ссылка: <a href=\"rusfencing.ru%s\">Результат</a>\n", link), ""
 	}
-	return toSend
+
+	for i, v := range res[:len(res)/2] {
+		toSend += fmt.Sprintf("%d. <a href=\"rusfencing.ru%s\">%s</a>\n", i+1, v.Link, v.Name)
+	}
+	for i, v := range res[len(res)/2:] {
+		toSend2 += fmt.Sprintf("%d. <a href=\"rusfencing.ru%s\">%s</a>\n", len(res)/2+i+1, v.Link, v.Name)
+	}
+	return toSend, toSend2
 }
