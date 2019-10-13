@@ -8,13 +8,11 @@ import (
 
 type Compet struct {
 	Title, Link string
+	Categs      []string
 }
 
-type fields struct {
-	vozr 	[]int
-	weapon 	[]int
-	sex 	[]int
-	vid 	[]int
+type Result struct {
+	Name, Link string
 }
 
 func ParseCompetitions() []*Compet {
@@ -36,8 +34,21 @@ func ParseCompetitions() []*Compet {
 	return nil
 }
 
-func ParseResults() {
-
+func ParseResults(link string) []*Result {
+	if response, err := http.Get("http://rusfencing.ru" + link); err != nil {
+		log.Fatal(err)
+	} else {
+		defer response.Body.Close()
+		if response.StatusCode == http.StatusOK {
+			if doc, err := html.Parse(response.Body); err != nil {
+				log.Fatal(err)
+			} else {
+				items := searchRes(doc, "table_block printBody")
+				return items
+			}
+		}
+	}
+	return nil
 }
 
 func readTable(table *html.Node) []*Compet {
@@ -59,13 +70,26 @@ func readRow(row *html.Node) *Compet {
 			item := readItem(td)
 			if item != nil {
 				return &Compet{
-					Title: item.Title,
-					Link:  item.Link,
+					Title:  item.Title,
+					Link:   item.Link,
+					Categs: item.Categs,
 				}
 			}
 		}
 	}
 	return nil
+}
+
+func getCat(item *html.Node) []string {
+	var result []string
+	for data := item.NextSibling; data != nil; data = data.NextSibling {
+		if cat := data.FirstChild; cat != nil {
+			if cat.Data == "Личные" || cat.Data == "Командные" || cat.Data == "М" || cat.Data == "Ж" || cat.Data == "сабля" || cat.Data == "шпага" || cat.Data == "рапира" {
+				result = append(result, cat.Data)
+			}
+		}
+	}
+	return result
 }
 
 func search(node *html.Node, class string) []*Compet {
@@ -75,13 +99,6 @@ func search(node *html.Node, class string) []*Compet {
 		for c := node.FirstChild; c != nil; c = c.NextSibling {
 			if c.Data == "table" {
 				items = readTable(c.FirstChild.NextSibling.FirstChild)
-				//tr := c.FirstChild.NextSibling.FirstChild.NextSibling.NextSibling
-				//log.Println(tr.Data)
-				//item := readItem(c)
-				//if item != nil {
-				//	log.Println("appending, len = ", len(items))
-				//	items = append(items, item)
-				//}
 			}
 		}
 		return items
@@ -115,10 +132,6 @@ func isText(node *html.Node) bool {
 	return node != nil && node.Type == html.TextNode
 }
 
-func isTable(node *html.Node, tag string) bool {
-	return node != nil && isElem(node, "table")
-}
-
 func isElem(node *html.Node, tag string) bool {
 	return node != nil && node.Type == html.ElementNode && node.Data == tag
 }
@@ -132,11 +145,71 @@ func readItem(item *html.Node) *Compet {
 		cs := getChildren(a)
 		if isText(cs[0]) {
 			return &Compet{
-				Link: getAttr(a, "href"),
-				Title: cs[0].Data,
+				Link:   getAttr(a, "href"),
+				Title:  cs[0].Data,
+				Categs: getCat(item),
 			}
 		}
 	}
 	return nil
 }
 
+func readItemRes(item *html.Node) *Result {
+	if a := item.FirstChild; isElem(a, "a") {
+		cs := getChildren(a)
+		if isText(cs[0].FirstChild) {
+			return &Result{
+				Link: getAttr(a, "href"),
+				Name: cs[0].FirstChild.Data,
+			}
+		}
+	}
+	return nil
+}
+
+func searchRes(node *html.Node, class string) []*Result {
+	if isDiv(node, class) {
+		log.Printf("==== %s ====", class)
+		var items []*Result
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			if c.Data == "table" {
+				items = readTableRes(c.FirstChild.NextSibling.FirstChild)
+			}
+		}
+		return items
+	}
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		if items := searchRes(c, class); items != nil {
+			return items
+		}
+	}
+	return nil
+}
+
+func readRowRes(row *html.Node) *Result {
+	for td := row.FirstChild; td != nil; td = td.NextSibling {
+		if td.Data == "td" {
+			item := readItemRes(td)
+			if item != nil {
+				return &Result{
+					Name: item.Name,
+					Link: item.Link,
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func readTableRes(table *html.Node) []*Result {
+	var res []*Result
+	for tr := table.NextSibling; tr != nil; tr = tr.NextSibling {
+		if tr.Data == "tr" {
+			if row := readRowRes(tr); row != nil {
+				res = append(res, row)
+			}
+		}
+
+	}
+	return res
+}
