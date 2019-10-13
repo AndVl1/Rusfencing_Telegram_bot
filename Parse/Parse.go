@@ -95,7 +95,6 @@ func getCat(item *html.Node) []string {
 
 func search(node *html.Node, class string) []*Compet {
 	if isDiv(node, class) {
-		log.Printf("==== %s ====", class)
 		var items []*Compet
 		for c := node.FirstChild; c != nil; c = c.NextSibling {
 			if c.Data == "table" {
@@ -176,7 +175,6 @@ func getPlace(item *html.Node) string {
 
 func searchRes(node *html.Node, class string) []*Result {
 	if isDiv(node, class) {
-		log.Printf("==== %s ====", class)
 		var items []*Result
 		for c := node.FirstChild; c != nil; c = c.NextSibling {
 			if c.Data == "table" {
