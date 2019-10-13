@@ -76,7 +76,12 @@ func getResultByLink(link string) []string {
 	}
 	all = append(all, toSend)
 	toSend = ""
-	for _, v := range res[len(res)/3:] {
+	for _, v := range res[len(res)/3 : len(res)*2/3] {
+		toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
+	}
+	all = append(all, toSend)
+	toSend = ""
+	for _, v := range res[len(res)*2/3:] {
 		toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
 	}
 	all = append(all, toSend)
