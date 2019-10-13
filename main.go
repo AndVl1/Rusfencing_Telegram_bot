@@ -11,7 +11,7 @@ import (
 func main() {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TestBotKey"))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Key err: ", err)
 	}
 	bot.Debug = true
 	log.Printf("Auth on account %s", bot.Self.UserName)
@@ -31,8 +31,8 @@ func main() {
 			for i, v := range res {
 				resMap[i] = v
 			}
-			for k, v := range resMap {
-				toSend += fmt.Sprintf("%d : %s", k+1, v.Title)
+			for i := 0; i < len(resMap); i++ {
+				toSend += fmt.Sprintf("%d : %s\n", i+1, resMap[i].Title)
 			}
 		}
 		msg.Text = toSend
