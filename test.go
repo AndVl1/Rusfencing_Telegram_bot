@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	parse "rfgTgBot/Parse"
+
+	parse "Rusfencing_Telegram_bot/Parse"
 )
 
 func main() {
@@ -10,8 +11,8 @@ func main() {
 	//for _, v := range ps {
 	//	fmt.Println(v.Title, v.Link, v.Categs)
 	//}
-	ps2 := parse.ParseResults("/protocol.php?ID=2029095")
+	ps2 := parse.ParseResults("/protocol.php?ID=2029012")
 	for _, v := range ps2 {
-		fmt.Println(v.Name, v.Link)
+		fmt.Println(v.Place, v.Name, v.Link)
 	}
 }

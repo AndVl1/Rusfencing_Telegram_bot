@@ -12,6 +12,7 @@ type Compet struct {
 }
 
 type Result struct {
+	Place      string
 	Name, Link string
 }
 
@@ -159,12 +160,18 @@ func readItemRes(item *html.Node) *Result {
 		cs := getChildren(a)
 		if isText(cs[0].FirstChild) {
 			return &Result{
-				Link: getAttr(a, "href"),
-				Name: cs[0].FirstChild.Data,
+				Place: getPlace(cs[0]),
+				Link:  getAttr(a, "href"),
+				Name:  cs[0].FirstChild.Data,
 			}
 		}
 	}
 	return nil
+}
+
+func getPlace(item *html.Node) string {
+	res := item.Parent.Parent.PrevSibling.PrevSibling.PrevSibling.PrevSibling.FirstChild.Data
+	return res
 }
 
 func searchRes(node *html.Node, class string) []*Result {
@@ -191,10 +198,7 @@ func readRowRes(row *html.Node) *Result {
 		if td.Data == "td" {
 			item := readItemRes(td)
 			if item != nil {
-				return &Result{
-					Name: item.Name,
-					Link: item.Link,
-				}
+				return item
 			}
 		}
 	}
