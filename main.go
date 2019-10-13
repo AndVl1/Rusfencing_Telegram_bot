@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/Syfaro/telegram-bot-api"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 )
@@ -12,6 +13,11 @@ import (
 var resMap map[int]*parse.Compet
 
 func main() {
+	http.HandleFunc("/", MainHandler)
+	go func() {
+		_ = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	}()
+
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("RFgBot"))
 	if err != nil {
 		log.Fatal("Key err: ", err)
@@ -33,7 +39,7 @@ func main() {
 			all = []string{"Нажмите /results, далее введите номер интересующего турнира"}
 		} else if update.Message.Text == "/results" {
 			all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
-		} else if i, err := strconv.Atoi(update.Message.Text); err == nil {
+		} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i < 30 {
 			all = getResultByLink(resMap[i-1].Link)
 		}
 		msg.DisableWebPagePreview = true
@@ -75,4 +81,8 @@ func getResultByLink(link string) []string {
 	}
 	all = append(all, toSend)
 	return all
+}
+
+func MainHandler(r http.ResponseWriter, _ *http.Request) {
+	_, _ = r.Write([]byte("Hi there"))
 }
