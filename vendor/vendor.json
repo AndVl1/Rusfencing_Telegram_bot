@@ -1,0 +1,15 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "Rusfencing_Telegram_bot",
+			"revision": ""
+		},
+		{
+			"path": "Rusfencing_Telegram_bot/Parse",
+			"revision": ""
+		}
+	],
+	"rootPath": "Rusfencing_Telegram_bot"
+}
