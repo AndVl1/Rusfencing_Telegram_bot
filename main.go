@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TestBotKey"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("RFgBot"))
 	if err != nil {
 		log.Fatal("Key err: ", err)
 	}
