@@ -70,7 +70,7 @@ func getResultByLink(link string) []string {
 	if res == nil {
 		return []string{fmt.Sprintf("Командные соревнования пока не получается смотреть. Вот вам ссылка: <a href=\"rusfencing.ru%s\">Результат</a>\n", link)}
 	}
-	toSend = fmt.Sprintf("<a href=\"rusfencing.ru%s\">Ссылка</a>\n\n", link)
+	toSend = fmt.Sprintf("<a href=\"rusfencing.ru%s\">Протокол</a>\n\n", link)
 	for _, v := range res[:len(res)/3] {
 		toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
 	}
