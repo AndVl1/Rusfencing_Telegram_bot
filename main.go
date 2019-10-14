@@ -42,6 +42,9 @@ func main() {
 			} else if update.Message.Text == "/results" {
 				all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
 			} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
+				if len(resMap) < 5 {
+					_ = getAllCompsResults()
+				}
 				all = getResultByLink(resMap[i-1].Link)
 			}
 			msg.DisableWebPagePreview = true
