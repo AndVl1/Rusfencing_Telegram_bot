@@ -30,25 +30,27 @@ func main() {
 	//updates, err := bot.GetUpdatesChan(u)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-		all := make([]string, 0)
-		//uID := update.Message.From.ID
-		if update.Message.Text == "/start" {
-			all = []string{"Нажмите /results, далее введите номер интересующего турнира"}
-		} else if update.Message.Text == "/results" {
-			all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
-		} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
-			all = getResultByLink(resMap[i-1].Link)
-		}
-		msg.DisableWebPagePreview = true
-		msg.ParseMode = "HTML"
-		for _, str := range all {
-			msg.Text = str
-			_, _ = bot.Send(msg)
-		}
+		go func(update tgbotapi.Update) {
+			if update.Message == nil {
+				return
+			}
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			all := make([]string, 0)
+			//uID := update.Message.From.ID
+			if update.Message.Text == "/start" {
+				all = []string{"Нажмите /results, далее введите номер интересующего турнира"}
+			} else if update.Message.Text == "/results" {
+				all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
+			} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
+				all = getResultByLink(resMap[i-1].Link)
+			}
+			msg.DisableWebPagePreview = true
+			msg.ParseMode = "HTML"
+			for _, str := range all {
+				msg.Text = str
+				_, _ = bot.Send(msg)
+			}
+		}(update)
 	}
 }
 
