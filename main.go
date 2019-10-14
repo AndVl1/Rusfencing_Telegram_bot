@@ -25,9 +25,10 @@ func main() {
 	bot.Debug = true
 	log.Printf("Auth on account %s", bot.Self.UserName)
 	resMap = make(map[int]*parse.Compet)
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-	updates, err := bot.GetUpdatesChan(u)
+	//u := tgbotapi.NewUpdate(0)
+	//u.Timeout = 60
+	//updates, err := bot.GetUpdatesChan(u)
+	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		if update.Message == nil {
 			continue
