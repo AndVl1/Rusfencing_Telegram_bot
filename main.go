@@ -1,13 +1,14 @@
 package main
 
 import (
-	parse "Rusfencing_Telegram_bot/Parse"
 	"fmt"
-	tgbotapi "github.com/Syfaro/telegram-bot-api"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	parse "Rusfencing_Telegram_bot/Parse"
+	tgbotapi "github.com/Syfaro/telegram-bot-api"
 )
 
 var resMap map[int]*parse.Compet
@@ -34,24 +35,40 @@ func main() {
 			if update.Message == nil {
 				return
 			}
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			all := make([]string, 0)
-			//uID := update.Message.From.ID
-			if update.Message.Text == "/start" {
-				all = []string{"Нажмите /results, далее введите номер интересующего турнира"}
-			} else if update.Message.Text == "/results" {
-				all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
-			} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
-				if len(resMap) < 5 {
-					_ = getAllCompsResults()
+			isRainitg := false
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			if cmd := update.Message.Command(); cmd != "" {
+				switch cmd {
+				case "/results":
+					all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
+				case "rating":
+					isRainitg = true
 				}
-				all = getResultByLink(resMap[i-1].Link)
+			} else {
+				//uID := update.Message.From.ID
+				if update.Message.Text == "/start" {
+					all = []string{"Нажмите /results, далее введите номер интересующего турнира"}
+				} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
+					if len(resMap) < 5 {
+						_ = getAllCompsResults()
+					}
+					all = getResultByLink(resMap[i-1].Link)
+				}
 			}
 			msg.DisableWebPagePreview = true
 			msg.ParseMode = "HTML"
 			for _, str := range all {
 				msg.Text = str
-				_, _ = bot.Send(msg)
+				mg, _ := bot.Send(msg)
+				if isRainitg {
+					keyboard := make([][]tgbotapi.InlineKeyboardButton, 3)
+
+					kbMarkup := tgbotapi.InlineKeyboardMarkup{
+						InlineKeyboard: keyboard,
+					}
+					tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, kbMarkup)
+				}
 			}
 		}(update)
 	}
