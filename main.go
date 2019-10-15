@@ -40,7 +40,7 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			if cmd := update.Message.Command(); cmd != "" {
 				switch cmd {
-				case "/results":
+				case "results":
 					all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
 				case "rating":
 					isRainitg = true
