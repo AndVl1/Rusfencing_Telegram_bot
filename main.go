@@ -43,6 +43,7 @@ func main() {
 				case "results":
 					all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
 				case "rating":
+					all = []string{"В процессе разработки"}
 					isRainitg = true
 				}
 			} else {
