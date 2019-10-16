@@ -26,6 +26,7 @@ var (
 )
 
 func main() {
+	ratingParMap = make(map[int]*ratingParams)
 	weapons = make(map[string]string)
 	s = make(map[string]string)
 	ages = make(map[string]string)
@@ -52,7 +53,6 @@ func main() {
 	//u := tgbotapi.NewUpdate(0)
 	//u.Timeout = 60
 	//updates, err := bot.GetUpdatesChan(u)
-	ratingParMap = make(map[int]*ratingParams)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
@@ -136,7 +136,7 @@ func main() {
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
 					msg.ReplyMarkup = keyboard
-					//ratingParMap[update.Message.From.ID] = &ratingParams{category: "", sex: "", weapon: ""}
+					ratingParMap[update.Message.From.ID] = &ratingParams{category: "", sex: "", weapon: ""}
 				}
 				m, _ := bot.Send(msg)
 				lastMsg[update.Message.Chat.ID] = m.MessageID
