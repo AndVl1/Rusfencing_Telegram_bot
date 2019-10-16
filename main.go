@@ -16,13 +16,29 @@ type ratingParams struct {
 	sex, weapon string
 }
 
+type kbData struct {
+	text         string
+	callbackData string
+}
+
 var resMap map[int]*parse.Compet
-var ratingParMap map[int]ratingParams
+var ratingParMap map[int]*ratingParams
 var lastMsg map[int]int
 
-var weapons = []string{"Сабля", "Шпага", "Рапира"}
-var s = []string{"Мужской", "Женский"}
-var ages = []string{"Кадеты", "Юниоры", "Взрослые"}
+var weapons = []kbData{
+	{text: "Сабля", callbackData: "476"},
+	{text: "Шпага", callbackData: "475"},
+	{text: "Рапира", callbackData: "474"},
+}
+var s = []kbData{
+	{text: "Мужской", callbackData: "450"},
+	{text: "Женский", callbackData: "451"},
+}
+var ages = []kbData{
+	{text: "Кадеты", callbackData: "495"},
+	{text: "Юниоры", callbackData: "496"},
+	{text: "Взрослые", callbackData: "498"},
+}
 
 func main() {
 	http.HandleFunc("/", MainHandler)
@@ -42,7 +58,22 @@ func main() {
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
-
+			if update.CallbackQuery != nil {
+				var query = update.CallbackQuery.Data
+				if query == "495" || query == "496" || query == "498" {
+					ratingParMap[update.CallbackQuery.From.ID].category = query
+				}
+				if query == "450" || query == "451" {
+					ratingParMap[update.CallbackQuery.From.ID].sex = query
+				}
+				if query == "476" || query == "475" || query == "474" {
+					ratingParMap[update.CallbackQuery.From.ID].weapon = query
+				}
+				if ratingParMap[update.CallbackQuery.From.ID].weapon != "" && ratingParMap[update.CallbackQuery.From.ID].category != "" && ratingParMap[update.CallbackQuery.From.ID].sex != "" {
+					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "кнопки нажаты")
+					_, _ = bot.Send(msg)
+				}
+			}
 			if update.Message == nil {
 				return
 			}
@@ -79,22 +110,22 @@ func main() {
 					keyboard := tgbotapi.InlineKeyboardMarkup{}
 					var row []tgbotapi.InlineKeyboardButton
 					for _, weapon := range weapons {
-						row = append(row, tgbotapi.NewInlineKeyboardButtonData(weapon, weapon))
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(weapon.text, weapon.callbackData))
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					row = []tgbotapi.InlineKeyboardButton{}
 					for _, v := range s {
-						row = append(row, tgbotapi.NewInlineKeyboardButtonData(v, v))
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(v.text, v.callbackData))
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					row = []tgbotapi.InlineKeyboardButton{}
 					for _, age := range ages {
-						row = append(row, tgbotapi.NewInlineKeyboardButtonData(age, age))
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(age.text, age.callbackData))
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
 					msg.ReplyMarkup = keyboard
-
+					ratingParMap[update.Message.From.ID] = &ratingParams{category: "", sex: "", weapon: ""}
 				}
 				_, _ = bot.Send(msg)
 			}
