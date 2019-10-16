@@ -136,9 +136,10 @@ func main() {
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
 					msg.ReplyMarkup = keyboard
-					ratingParMap[update.Message.From.ID] = &ratingParams{category: "", sex: "", weapon: ""}
+					//ratingParMap[update.Message.From.ID] = &ratingParams{category: "", sex: "", weapon: ""}
 				}
-				_, _ = bot.Send(msg)
+				m, _ := bot.Send(msg)
+				lastMsg[update.Message.Chat.ID] = m.MessageID
 			}
 		}(update)
 	}
