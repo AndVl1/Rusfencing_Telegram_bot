@@ -11,15 +11,23 @@ import (
 	tgbotapi "github.com/Syfaro/telegram-bot-api"
 )
 
+type ratingParams struct {
+	category    string
+	sex, weapon string
+}
+
 var resMap map[int]*parse.Compet
+var ratingParMap map[int]ratingParams
+var lastMsg map[int]int
+
+var weapons = []string{"Сабля", "Шпага", "Рапира"}
 
 func main() {
 	http.HandleFunc("/", MainHandler)
 	go func() {
 		_ = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	}()
-
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("RFgBot"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("RFgBot")) // TestBotKey RFgBot
 	if err != nil {
 		log.Fatal("Key err: ", err)
 	}
@@ -36,7 +44,7 @@ func main() {
 				return
 			}
 			all := make([]string, 0)
-			isRainitg := false
+			isRating := false
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			if cmd := update.Message.Command(); cmd != "" {
 				switch cmd {
@@ -44,7 +52,10 @@ func main() {
 					all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
 				case "rating":
 					all = []string{"В процессе разработки"}
-					isRainitg = true
+					msg.ReplyToMessageID = update.Message.MessageID
+					if update.Message.From.UserName == "AndVl1" {
+						isRating = true
+					}
 				}
 			} else {
 				//uID := update.Message.From.ID
@@ -61,15 +72,17 @@ func main() {
 			msg.ParseMode = "HTML"
 			for _, str := range all {
 				msg.Text = str
-				mg, _ := bot.Send(msg)
-				if isRainitg {
-					keyboard := make([][]tgbotapi.InlineKeyboardButton, 3)
-
-					kbMarkup := tgbotapi.InlineKeyboardMarkup{
-						InlineKeyboard: keyboard,
+				if isRating {
+					keyboard := tgbotapi.InlineKeyboardMarkup{}
+					for _, weapon := range weapons {
+						var row []tgbotapi.InlineKeyboardButton
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(weapon, weapon))
+						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					}
-					tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, kbMarkup)
+					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
+					msg.ReplyMarkup = keyboard
 				}
+				_, _ = bot.Send(msg)
 			}
 		}(update)
 	}
