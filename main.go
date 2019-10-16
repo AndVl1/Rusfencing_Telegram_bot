@@ -21,6 +21,8 @@ var ratingParMap map[int]ratingParams
 var lastMsg map[int]int
 
 var weapons = []string{"Сабля", "Шпага", "Рапира"}
+var s = []string{"Мужской", "Женский"}
+var ages = []string{"Кадеты", "Юниоры", "Взрослые"}
 
 func main() {
 	http.HandleFunc("/", MainHandler)
@@ -40,6 +42,9 @@ func main() {
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
+			if update.CallbackQuery != nil {
+				ratingParMap[update.Message.From.ID] = update.CallbackQuery.Data
+			}
 			if update.Message == nil {
 				return
 			}
@@ -79,8 +84,19 @@ func main() {
 						row = append(row, tgbotapi.NewInlineKeyboardButtonData(weapon, weapon))
 						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					}
+					for _, v := range s {
+						var row []tgbotapi.InlineKeyboardButton
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(v, v))
+						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+					}
+					for _, age := range ages {
+						var row []tgbotapi.InlineKeyboardButton
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(age, age))
+						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+					}
 					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
 					msg.ReplyMarkup = keyboard
+
 				}
 				_, _ = bot.Send(msg)
 			}
