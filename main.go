@@ -22,26 +22,13 @@ var (
 	ages         map[string]string
 	resMap       map[int]*parse.Compet
 	ratingParMap map[int]*ratingParams
-	lastMsg      map[int]int
+	//lastMsg      map[int]int
 )
-
-//var weapons = []kbData{
-//	{text: "Сабля", callbackData: "476"},
-//	{text: "Шпага", callbackData: "475"},
-//	{text: "Рапира", callbackData: "474"},
-//}
-//var s = []kbData{
-//	{text: "Мужской", callbackData: "450"},
-//	{text: "Женский", callbackData: "451"},
-//}
-//var ages = []kbData{
-//	{text: "Кадеты", callbackData: "495"},
-//	{text: "Юниоры", callbackData: "496"},
-//	{text: "Взрослые", callbackData: "498"},
-//}
 
 func main() {
 	weapons = make(map[string]string)
+	s = make(map[string]string)
+	ages = make(map[string]string)
 	weapons["Сабля"] = "476"
 	weapons["Шпага"] = "475"
 	weapons["Рапира"] = "474"
