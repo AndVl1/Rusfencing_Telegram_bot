@@ -29,6 +29,7 @@ func main() {
 	weapons = make(map[string]string)
 	s = make(map[string]string)
 	ages = make(map[string]string)
+	lastMsg = make(map[int64]int)
 	weapons["Сабля"] = "476"
 	weapons["Шпага"] = "475"
 	weapons["Рапира"] = "474"
