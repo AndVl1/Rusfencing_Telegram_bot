@@ -16,31 +16,40 @@ type ratingParams struct {
 	sex, weapon string
 }
 
-type kbData struct {
-	text         string
-	callbackData string
-}
+var (
+	weapons      map[string]string
+	s            map[string]string
+	ages         map[string]string
+	resMap       map[int]*parse.Compet
+	ratingParMap map[int]*ratingParams
+	lastMsg      map[int]int
+)
 
-var resMap map[int]*parse.Compet
-var ratingParMap map[int]*ratingParams
-var lastMsg map[int]int
-
-var weapons = []kbData{
-	{text: "Сабля", callbackData: "476"},
-	{text: "Шпага", callbackData: "475"},
-	{text: "Рапира", callbackData: "474"},
-}
-var s = []kbData{
-	{text: "Мужской", callbackData: "450"},
-	{text: "Женский", callbackData: "451"},
-}
-var ages = []kbData{
-	{text: "Кадеты", callbackData: "495"},
-	{text: "Юниоры", callbackData: "496"},
-	{text: "Взрослые", callbackData: "498"},
-}
+//var weapons = []kbData{
+//	{text: "Сабля", callbackData: "476"},
+//	{text: "Шпага", callbackData: "475"},
+//	{text: "Рапира", callbackData: "474"},
+//}
+//var s = []kbData{
+//	{text: "Мужской", callbackData: "450"},
+//	{text: "Женский", callbackData: "451"},
+//}
+//var ages = []kbData{
+//	{text: "Кадеты", callbackData: "495"},
+//	{text: "Юниоры", callbackData: "496"},
+//	{text: "Взрослые", callbackData: "498"},
+//}
 
 func main() {
+	weapons = make(map[string]string)
+	weapons["Сабля"] = "476"
+	weapons["Шпага"] = "475"
+	weapons["Рапира"] = "474"
+	s["Мужской"] = "450"
+	s["Женский"] = "451"
+	ages["Кадеты"] = "495"
+	ages["Юниоры"] = "496"
+	ages["Взрослые"] = "498"
 	http.HandleFunc("/", MainHandler)
 	go func() {
 		_ = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
@@ -72,6 +81,12 @@ func main() {
 				}
 				if ratingParMap[update.CallbackQuery.From.ID].weapon != "" && ratingParMap[update.CallbackQuery.From.ID].category != "" && ratingParMap[update.CallbackQuery.From.ID].sex != "" {
 					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "кнопки нажаты")
+					res := getRating(ratingParams{
+						category: ratingParMap[update.CallbackQuery.From.ID].category,
+						sex:      ratingParMap[update.CallbackQuery.From.ID].sex,
+						weapon:   ratingParMap[update.CallbackQuery.From.ID].weapon,
+					})
+					msg.Text = res
 					_, _ = bot.Send(msg)
 				}
 			}
@@ -110,18 +125,18 @@ func main() {
 				if isRating {
 					keyboard := tgbotapi.InlineKeyboardMarkup{}
 					var row []tgbotapi.InlineKeyboardButton
-					for _, weapon := range weapons {
-						row = append(row, tgbotapi.NewInlineKeyboardButtonData(weapon.text, weapon.callbackData))
+					for k, v := range weapons {
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(k, v))
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					row = []tgbotapi.InlineKeyboardButton{}
-					for _, v := range s {
-						row = append(row, tgbotapi.NewInlineKeyboardButtonData(v.text, v.callbackData))
+					for k, v := range s {
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(k, v))
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					row = []tgbotapi.InlineKeyboardButton{}
-					for _, age := range ages {
-						row = append(row, tgbotapi.NewInlineKeyboardButtonData(age.text, age.callbackData))
+					for k, v := range ages {
+						row = append(row, tgbotapi.NewInlineKeyboardButtonData(k, v))
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
@@ -132,6 +147,15 @@ func main() {
 			}
 		}(update)
 	}
+}
+
+func getRating(params ratingParams) string {
+	res := parse.ParseRatings(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex))
+	toSend := ""
+	for _, v := range res {
+		toSend += fmt.Sprintf("<a href=\"rusfencing.ru%s\">%s: %s\t[%s очков]</a>\n", v.Link, v.Place, v.Name, v.Points)
+	}
+	return toSend
 }
 
 func getAllCompsResults() string {
