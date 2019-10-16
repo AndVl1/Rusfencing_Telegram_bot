@@ -55,6 +55,7 @@ func main() {
 	//u := tgbotapi.NewUpdate(0)
 	//u.Timeout = 60
 	//updates, err := bot.GetUpdatesChan(u)
+	ratingParMap = make(map[int]*ratingParams)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
