@@ -32,8 +32,8 @@ func main() {
 	weapons["Сабля"] = "476"
 	weapons["Шпага"] = "475"
 	weapons["Рапира"] = "474"
-	s["Мужской"] = "450"
-	s["Женский"] = "451"
+	s["Мужчины"] = "450"
+	s["Женщины"] = "451"
 	ages["Кадеты"] = "495"
 	ages["Юниоры"] = "496"
 	ages["Взрослые"] = "498"
@@ -73,6 +73,8 @@ func main() {
 						sex:      ratingParMap[update.CallbackQuery.From.ID].sex,
 						weapon:   ratingParMap[update.CallbackQuery.From.ID].weapon,
 					})
+					msg.DisableWebPagePreview = true
+					msg.ParseMode = "HTML"
 					msg.Text = res
 					_, _ = bot.Send(msg)
 				}
