@@ -42,9 +42,7 @@ func main() {
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
-			if update.CallbackQuery != nil {
-				ratingParMap[update.Message.From.ID] = update.CallbackQuery.Data
-			}
+
 			if update.Message == nil {
 				return
 			}
