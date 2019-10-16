@@ -67,7 +67,7 @@ func main() {
 					ratingParMap[update.CallbackQuery.From.ID].weapon = query
 				}
 				if ratingParMap[update.CallbackQuery.From.ID].weapon != "" && ratingParMap[update.CallbackQuery.From.ID].category != "" && ratingParMap[update.CallbackQuery.From.ID].sex != "" {
-					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "кнопки нажаты")
+					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "")
 					res := getRating(ratingParams{
 						category: ratingParMap[update.CallbackQuery.From.ID].category,
 						sex:      ratingParMap[update.CallbackQuery.From.ID].sex,
@@ -139,10 +139,11 @@ func main() {
 }
 
 func getRating(params ratingParams) string {
+	rfg := "rusfencing.ru"
 	res := parse.ParseRatings(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex))
-	toSend := ""
+	toSend := fmt.Sprintf("<a href=\"%s/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839\">Ссылка</a>\n", rfg, params.category, params.weapon, params.sex)
 	for _, v := range res {
-		toSend += fmt.Sprintf("<a href=\"rusfencing.ru%s\">%s: %s\t[%s очков]</a>\n", v.Link, v.Place, v.Name, v.Points)
+		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s&#9;[%s]</a>", v.Place, v.Link, v.Name, v.Points)
 	}
 	return toSend
 }
