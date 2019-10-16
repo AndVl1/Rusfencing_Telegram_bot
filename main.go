@@ -22,7 +22,7 @@ var (
 	ages         map[string]string
 	resMap       map[int]*parse.Compet
 	ratingParMap map[int]*ratingParams
-	//lastMsg      map[int]int
+	lastMsg      map[int64]int
 )
 
 func main() {
@@ -73,6 +73,10 @@ func main() {
 						sex:      ratingParMap[update.CallbackQuery.From.ID].sex,
 						weapon:   ratingParMap[update.CallbackQuery.From.ID].weapon,
 					})
+					_, _ = bot.DeleteMessage(tgbotapi.DeleteMessageConfig{
+						ChatID:    update.CallbackQuery.Message.Chat.ID,
+						MessageID: lastMsg[update.CallbackQuery.Message.Chat.ID],
+					})
 					msg.DisableWebPagePreview = true
 					msg.ParseMode = "HTML"
 					msg.Text = res
@@ -94,12 +98,13 @@ func main() {
 					msg.ReplyToMessageID = update.Message.MessageID
 					if update.Message.From.UserName == "AndVl1" {
 						isRating = true
+						lastMsg[update.Message.Chat.ID] = update.Message.MessageID
 					}
 				}
 			} else {
 				//uID := update.Message.From.ID
 				if update.Message.Text == "/start" {
-					all = []string{"Нажмите /results, далее введите номер интересующего турнира"}
+					all = []string{"Нажмите /results, далее введите номер интересующего турнира, /rating - ситуацию с система отбора"}
 				} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
 					if len(resMap) < 5 {
 						_ = getAllCompsResults()
