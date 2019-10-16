@@ -77,21 +77,23 @@ func main() {
 				msg.Text = str
 				if isRating {
 					keyboard := tgbotapi.InlineKeyboardMarkup{}
+					var row []tgbotapi.InlineKeyboardButton
 					for _, weapon := range weapons {
-						var row []tgbotapi.InlineKeyboardButton
 						row = append(row, tgbotapi.NewInlineKeyboardButtonData(weapon, weapon))
-						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					}
+					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+					row = []tgbotapi.InlineKeyboardButton{}
 					for _, v := range s {
-						var row []tgbotapi.InlineKeyboardButton
 						row = append(row, tgbotapi.NewInlineKeyboardButtonData(v, v))
-						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					}
+					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+					row = []tgbotapi.InlineKeyboardButton{}
 					for _, age := range ages {
 						var row []tgbotapi.InlineKeyboardButton
 						row = append(row, tgbotapi.NewInlineKeyboardButtonData(age, age))
 						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					}
+					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
 					msg.ReplyMarkup = keyboard
 
