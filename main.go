@@ -95,12 +95,10 @@ func main() {
 				case "results":
 					all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
 				case "rating":
-					all = []string{"В процессе разработки"}
+					all = []string{"Выбирете интересующие вас параметры"}
 					msg.ReplyToMessageID = update.Message.MessageID
-					if update.Message.From.UserName == "AndVl1" {
-						isRating = true
-						lastMsg[update.Message.Chat.ID] = update.Message.MessageID
-					}
+					isRating = true
+					lastMsg[update.Message.Chat.ID] = update.Message.MessageID
 				}
 			} else {
 				//uID := update.Message.From.ID
@@ -111,6 +109,8 @@ func main() {
 						_ = getAllCompsResults()
 					}
 					all = getResultByLink(resMap[i-1].Link)
+				} else {
+					// todo отправлять мне сообщение (через базу данных)
 				}
 			}
 			msg.DisableWebPagePreview = true
