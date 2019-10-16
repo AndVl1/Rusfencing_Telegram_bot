@@ -89,7 +89,6 @@ func main() {
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					row = []tgbotapi.InlineKeyboardButton{}
 					for _, age := range ages {
-						var row []tgbotapi.InlineKeyboardButton
 						row = append(row, tgbotapi.NewInlineKeyboardButtonData(age, age))
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
