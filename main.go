@@ -91,7 +91,6 @@ func main() {
 					for _, age := range ages {
 						var row []tgbotapi.InlineKeyboardButton
 						row = append(row, tgbotapi.NewInlineKeyboardButtonData(age, age))
-						keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					}
 					keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 					//tgbotapi.NewEditMessageReplyMarkup(update.Message.Chat.ID, mg.MessageID, keyboard)
