@@ -109,7 +109,7 @@ func main() {
 				}
 			} else {
 				//uID := update.Message.From.ID
-				//go addToFirestore(ctx, update, client)
+				go addToFirestore(ctx, update, client)
 				if update.Message.Text == "/start" {
 					all = []string{"Нажмите /results, далее введите номер интересующего турнира, /rating - ситуацию с система отбора"}
 				} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
