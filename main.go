@@ -153,7 +153,7 @@ func main() {
 
 func initFirestore(ctx context.Context) *firestore.Client {
 	//sa := option.WithCredentialsFile(os.Getenv("HOME") + "/firebaseKey.json")
-	sa := option.WithAPIKey(os.Getenv("firebaseKey"))
+	sa := option.WithCredentialsJSON([]byte(os.Getenv("firebaseKey")))
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
 		log.Println(err)
