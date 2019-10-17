@@ -49,8 +49,8 @@ func main() {
 	go func() {
 		_ = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	}()
-	//ctx := context.Background()
-	//client = initFirestore(ctx)
+	ctx := context.Background()
+	client = initFirestore(ctx)
 	defer client.Close()
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("RFgBot")) // TestBotKey RFgBot
