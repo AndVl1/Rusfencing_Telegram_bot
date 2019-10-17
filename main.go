@@ -57,7 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Key err: ", err)
 	}
-	bot.Debug = true
+	bot.Debug = false
 	log.Printf("Auth on account %s", bot.Self.UserName)
 	resMap = make(map[int]*parse.Compet)
 	updates := bot.ListenForWebhook("/" + bot.Token)
@@ -108,7 +108,7 @@ func main() {
 					isRating = true
 					lastMsg[update.Message.Chat.ID] = update.Message.MessageID
 				case "help":
-					all = []string{"Доступные команды:\n\t/results - получить список последних соревнований\n\t/rating - получить текущую ситуацию системы отбора" +
+					all = []string{"Доступные команды:\n/results - получить список последних соревнований\n/rating - получить текущую ситуацию системы отбора" +
 						"\nДля отзывов и вопросов - пишите боту, сообщения будут прочтены и при необходимости будет ответ на них" +
 						"\nСпасибо за использование данного бота"}
 				}
@@ -190,7 +190,7 @@ func getRating(params ratingParams) string {
 	res := parse.ParseRatings(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex))
 	toSend := fmt.Sprintf("<a href=\"%s/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839\">Ссылка</a>\n", rfg, params.category, params.weapon, params.sex)
 	for _, v := range res {
-		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s		[%s]</a>", v.Place, v.Link, v.Name, v.Points)
+		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s	[%s]</a>", v.Place, v.Link, v.Name, v.Points)
 	}
 	return toSend
 }
