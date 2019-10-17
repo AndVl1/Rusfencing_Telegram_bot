@@ -1,13 +1,17 @@
 package main
 
 import (
+	"cloud.google.com/go/firestore"
+	"context"
 	"fmt"
+	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 
 	parse "Rusfencing_Telegram_bot/Parse"
+	firebase "firebase.google.com/go"
 	tgbotapi "github.com/Syfaro/telegram-bot-api"
 )
 
@@ -24,6 +28,8 @@ var (
 	ratingParMap map[int]*ratingParams
 	lastMsg      map[int64]int
 )
+
+var client *firestore.Client
 
 func main() {
 	ratingParMap = make(map[int]*ratingParams)
@@ -43,6 +49,10 @@ func main() {
 	go func() {
 		_ = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	}()
+	ctx := context.Background()
+	client = initFirestore(ctx)
+	defer client.Close()
+
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("RFgBot")) // TestBotKey RFgBot
 	if err != nil {
 		log.Fatal("Key err: ", err)
@@ -50,9 +60,6 @@ func main() {
 	bot.Debug = true
 	log.Printf("Auth on account %s", bot.Self.UserName)
 	resMap = make(map[int]*parse.Compet)
-	//u := tgbotapi.NewUpdate(0)
-	//u.Timeout = 60
-	//updates, err := bot.GetUpdatesChan(u)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
@@ -102,6 +109,7 @@ func main() {
 				}
 			} else {
 				//uID := update.Message.From.ID
+				go addToFirestore(ctx, update, client)
 				if update.Message.Text == "/start" {
 					all = []string{"Нажмите /results, далее введите номер интересующего турнира, /rating - ситуацию с система отбора"}
 				} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
@@ -109,8 +117,6 @@ func main() {
 						_ = getAllCompsResults()
 					}
 					all = getResultByLink(resMap[i-1].Link)
-				} else {
-					// todo отправлять мне сообщение (через базу данных)
 				}
 			}
 			msg.DisableWebPagePreview = true
@@ -145,12 +151,40 @@ func main() {
 	}
 }
 
+func initFirestore(ctx context.Context) *firestore.Client {
+	//sa := option.WithCredentialsFile(os.Getenv("HOME") + "/firebaseKey.json")
+	sa := option.WithAPIKey(os.Getenv("firebaseKey"))
+	app, err := firebase.NewApp(ctx, nil, sa)
+	if err != nil {
+		log.Println(err)
+	}
+
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Println(err)
+	}
+	return client
+}
+
+func addToFirestore(ctx context.Context, update tgbotapi.Update, client *firestore.Client) {
+	_, _, err := client.Collection("users").Add(ctx, map[string]interface{}{
+		"chatID":     update.Message.Chat.ID,
+		"uID":        update.Message.From.ID,
+		"uName":      update.Message.From.UserName,
+		"messageTxt": update.Message.Text,
+		"messageID":  update.Message.MessageID,
+	})
+	if err != nil {
+		log.Println("add to firestore: ", err)
+	}
+}
+
 func getRating(params ratingParams) string {
 	rfg := "rusfencing.ru"
 	res := parse.ParseRatings(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex))
 	toSend := fmt.Sprintf("<a href=\"%s/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839\">Ссылка</a>\n", rfg, params.category, params.weapon, params.sex)
 	for _, v := range res {
-		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s&#9;[%s]</a>", v.Place, v.Link, v.Name, v.Points)
+		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s		[%s]</a>", v.Place, v.Link, v.Name, v.Points)
 	}
 	return toSend
 }
