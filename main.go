@@ -107,6 +107,10 @@ func main() {
 					msg.ReplyToMessageID = update.Message.MessageID
 					isRating = true
 					lastMsg[update.Message.Chat.ID] = update.Message.MessageID
+				case "help":
+					all = []string{"Доступные команды:\n\t/results - получить список последних соревнований\n\t/rating - получить текущую ситуацию системы отбора" +
+						"\nДля отзывов и вопросов - пишите боту, сообщения будут прочтены и при необходимости будет ответ на них" +
+						"\nСпасибо за использование данного бота"}
 				}
 			} else {
 				if update.Message.Text == "/start" {
