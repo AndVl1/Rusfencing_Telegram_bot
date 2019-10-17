@@ -167,7 +167,7 @@ func initFirestore(ctx context.Context) *firestore.Client {
 }
 
 func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Client) {
-	name := fmt.Sprintf("%s [%d]", update.Message.From.FirstName, update.Message.From.ID)
+	name := fmt.Sprintf("%s [%d]", update.Message.From.UserName, update.Message.From.ID)
 	_, _, err := client.Collection(name).Add(ctx, map[string]interface{}{
 		"chatID":     update.Message.Chat.ID,
 		"uID":        update.Message.From.ID,
