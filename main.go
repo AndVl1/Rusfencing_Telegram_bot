@@ -97,6 +97,7 @@ func main() {
 			all := make([]string, 0)
 			isRating := false
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			go addToDB(ctx, update, client)
 			if cmd := update.Message.Command(); cmd != "" {
 				switch cmd {
 				case "results":
@@ -108,8 +109,6 @@ func main() {
 					lastMsg[update.Message.Chat.ID] = update.Message.MessageID
 				}
 			} else {
-				//uID := update.Message.From.ID
-				go addToDB(ctx, update, client)
 				if update.Message.Text == "/start" {
 					all = []string{"Нажмите /results, далее введите номер интересующего турнира, /rating - ситуацию с система отбора"}
 				} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
@@ -179,6 +178,10 @@ func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Clie
 		log.Println("add to firestore: ", err)
 	}
 }
+
+//func addText(update tgbotapi.Update) string {
+//	if update.
+//}
 
 func getRating(params ratingParams) string {
 	rfg := "rusfencing.ru"
