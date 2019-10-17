@@ -109,7 +109,7 @@ func main() {
 				}
 			} else {
 				//uID := update.Message.From.ID
-				go addToFirestore(ctx, update, client)
+				go addToDB(ctx, update, client)
 				if update.Message.Text == "/start" {
 					all = []string{"Нажмите /results, далее введите номер интересующего турнира, /rating - ситуацию с система отбора"}
 				} else if i, err := strconv.Atoi(update.Message.Text); err == nil && i > 0 && i <= 30 {
@@ -166,7 +166,7 @@ func initFirestore(ctx context.Context) *firestore.Client {
 	return client
 }
 
-func addToFirestore(ctx context.Context, update tgbotapi.Update, client *firestore.Client) {
+func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Client) {
 	_, _, err := client.Collection("users").Add(ctx, map[string]interface{}{
 		"chatID":     update.Message.Chat.ID,
 		"uID":        update.Message.From.ID,
