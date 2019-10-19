@@ -6,24 +6,15 @@ import (
 	"net/http"
 )
 
-type Compet struct {
-	Title, Link string
-	Categs      []string
-}
-
-type Result struct {
-	Place      string
+type ResultFin struct {
 	Name, Link string
+	Points     string
+	Place      string
+	Categs     []string
 }
 
-type Rating struct {
-	Place, Link  string
-	Name, Points string
-}
-
-func ParseCompetitions() []*Compet {
-	link := "rusfencing.ru/result.php"
-	if response, err := http.Get("http://" + link); err != nil {
+func ParseLink(link string, isProtocol bool) []*ResultFin {
+	if response, err := http.Get("http://rusfencing.ru" + link); err != nil {
 		log.Fatal(err)
 	} else {
 		defer response.Body.Close()
@@ -32,7 +23,12 @@ func ParseCompetitions() []*Compet {
 			if doc, err := html.Parse(response.Body); err != nil {
 				log.Fatal(err)
 			} else {
-				items := search(doc, "table_block")
+				var items []*ResultFin
+				if !isProtocol {
+					items = searchFin(doc, "table_block", isProtocol)
+				} else {
+					items = searchFin(doc, "table_block printBody", isProtocol)
+				}
 				return items
 			}
 		}
@@ -40,45 +36,28 @@ func ParseCompetitions() []*Compet {
 	return nil
 }
 
-func ParseResults(link string) []*Result {
-	if response, err := http.Get("http://rusfencing.ru" + link); err != nil {
-		log.Fatal(err)
-	} else {
-		defer response.Body.Close()
-		if response.StatusCode == http.StatusOK {
-			if doc, err := html.Parse(response.Body); err != nil {
-				log.Fatal(err)
-			} else {
-				items := searchRes(doc, "table_block printBody")
-				return items
+func searchFin(node *html.Node, class string, isProtocol bool) []*ResultFin {
+	if isDiv(node, class) {
+		var items []*ResultFin
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			if c.Data == "table" {
+				items = readTableFin(c.FirstChild.NextSibling.FirstChild, isProtocol)
 			}
+		}
+		return items
+	}
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		if items := searchFin(c, class, isProtocol); items != nil {
+			return items
 		}
 	}
 	return nil
 }
-
-func ParseRatings(link string) []*Rating {
-	if response, err := http.Get("http://rusfencing.ru" + link); err != nil {
-		log.Fatal(err)
-	} else {
-		defer response.Body.Close()
-		if response.StatusCode == http.StatusOK {
-			if doc, err := html.Parse(response.Body); err != nil {
-				log.Fatal(err)
-			} else {
-				items := searchRt(doc, "table_block")
-				return items
-			}
-		}
-	}
-	return nil
-}
-
-func readTable(table *html.Node) []*Compet {
-	var res []*Compet
+func readTableFin(table *html.Node, isProtocol bool) []*ResultFin {
+	var res []*ResultFin
 	for tr := table.NextSibling; tr != nil; tr = tr.NextSibling {
 		if tr.Data == "tr" {
-			if row := readRow(tr); row != nil {
+			if row := readRowFin(tr, isProtocol); row != nil {
 				res = append(res, row)
 			}
 		}
@@ -87,16 +66,36 @@ func readTable(table *html.Node) []*Compet {
 	return res
 }
 
-func readRow(row *html.Node) *Compet {
+func readRowFin(row *html.Node, isProtocol bool) *ResultFin {
 	for td := row.FirstChild; td != nil; td = td.NextSibling {
 		if td.Data == "td" {
-			item := readItem(td)
+			item := readItemFin(td, isProtocol)
 			if item != nil {
-				return &Compet{
-					Title:  item.Title,
-					Link:   item.Link,
-					Categs: item.Categs,
-				}
+				return item
+			}
+		}
+	}
+	return nil
+}
+
+func readItemFin(item *html.Node, isProtocol bool) *ResultFin {
+	if a := item.FirstChild; isElem(a, "a") {
+		cs := getChildren(a)
+		if isText(cs[0]) {
+			return &ResultFin{
+				Name:   cs[0].Data,
+				Link:   getAttr(a, "href"),
+				Points: getPoints(cs[0]),
+				Place:  a.Parent.PrevSibling.PrevSibling.FirstChild.Data,
+				Categs: getCat(item),
+			}
+		} else if isProtocol && isText(cs[0].FirstChild) {
+			return &ResultFin{
+				Name:   cs[0].FirstChild.Data,
+				Link:   getAttr(a, "href"),
+				Points: "",
+				Place:  a.Parent.PrevSibling.PrevSibling.PrevSibling.PrevSibling.FirstChild.Data,
+				Categs: nil,
 			}
 		}
 	}
@@ -113,24 +112,6 @@ func getCat(item *html.Node) []string {
 		}
 	}
 	return result
-}
-
-func search(node *html.Node, class string) []*Compet {
-	if isDiv(node, class) {
-		var items []*Compet
-		for c := node.FirstChild; c != nil; c = c.NextSibling {
-			if c.Data == "table" {
-				items = readTable(c.FirstChild.NextSibling.FirstChild)
-			}
-		}
-		return items
-	}
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		if items := search(c, class); items != nil {
-			return items
-		}
-	}
-	return nil
 }
 
 func getChildren(node *html.Node) []*html.Node {
@@ -162,83 +143,6 @@ func isDiv(node *html.Node, class string) bool {
 	return isElem(node, "div") && getAttr(node, "class") == class
 }
 
-func readItem(item *html.Node) *Compet {
-	if a := item.FirstChild; isElem(a, "a") {
-		cs := getChildren(a)
-		if isText(cs[0]) {
-			return &Compet{
-				Link:   getAttr(a, "href"),
-				Title:  cs[0].Data,
-				Categs: getCat(item),
-			}
-		}
-	}
-	return nil
-}
-func getPlace(item *html.Node) string {
-	res := item.Parent.Parent.PrevSibling.PrevSibling.PrevSibling.PrevSibling.FirstChild.Data
-	return res
-}
-
-//*****
-func searchRt(node *html.Node, class string) []*Rating {
-	if isDiv(node, class) {
-		var items []*Rating
-		for c := node.FirstChild; c != nil; c = c.NextSibling {
-			if c.Data == "table" {
-				items = readTableRt(c.FirstChild.NextSibling.FirstChild)
-			}
-		}
-		return items
-	}
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		if items := searchRt(c, class); items != nil {
-			return items
-		}
-	}
-	return nil
-}
-
-func readTableRt(table *html.Node) []*Rating {
-	var res []*Rating
-	for tr := table.NextSibling; tr != nil; tr = tr.NextSibling {
-		if tr.Data == "tr" {
-			if row := readRowRt(tr); row != nil {
-				res = append(res, row)
-			}
-		}
-
-	}
-	return res
-}
-
-func readRowRt(row *html.Node) *Rating {
-	for td := row.FirstChild; td != nil; td = td.NextSibling {
-		if td.Data == "td" {
-			item := readItemRt(td)
-			if item != nil {
-				return item
-			}
-		}
-	}
-	return nil
-}
-
-func readItemRt(item *html.Node) *Rating {
-	if a := item.FirstChild; isElem(a, "a") {
-		cs := getChildren(a)
-		if isText(cs[0]) {
-			return &Rating{
-				Place:  a.Parent.PrevSibling.PrevSibling.FirstChild.Data,
-				Link:   getAttr(a, "href"),
-				Name:   cs[0].Data,
-				Points: getPoints(cs[0]),
-			}
-		}
-	}
-	return nil
-}
-
 func getPoints(item *html.Node) string {
 	res := ""
 	for cur := item.Parent.Parent; cur != nil; cur = cur.NextSibling {
@@ -247,62 +151,4 @@ func getPoints(item *html.Node) string {
 		}
 	}
 	return res
-}
-
-//*****
-func searchRes(node *html.Node, class string) []*Result {
-	if isDiv(node, class) {
-		var items []*Result
-		for c := node.FirstChild; c != nil; c = c.NextSibling {
-			if c.Data == "table" {
-				items = readTableRes(c.FirstChild.NextSibling.FirstChild)
-			}
-		}
-		return items
-	}
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		if items := searchRes(c, class); items != nil {
-			return items
-		}
-	}
-	return nil
-}
-
-func readRowRes(row *html.Node) *Result {
-	for td := row.FirstChild; td != nil; td = td.NextSibling {
-		if td.Data == "td" {
-			item := readItemRes(td)
-			if item != nil {
-				return item
-			}
-		}
-	}
-	return nil
-}
-
-func readTableRes(table *html.Node) []*Result {
-	var res []*Result
-	for tr := table.NextSibling; tr != nil; tr = tr.NextSibling {
-		if tr.Data == "tr" {
-			if row := readRowRes(tr); row != nil {
-				res = append(res, row)
-			}
-		}
-
-	}
-	return res
-}
-
-func readItemRes(item *html.Node) *Result {
-	if a := item.FirstChild; isElem(a, "a") {
-		cs := getChildren(a)
-		if isText(cs[0].FirstChild) {
-			return &Result{
-				Place: getPlace(cs[0]),
-				Link:  getAttr(a, "href"),
-				Name:  cs[0].FirstChild.Data,
-			}
-		}
-	}
-	return nil
 }

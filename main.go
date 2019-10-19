@@ -24,7 +24,7 @@ var (
 	weapons      map[string]string
 	s            map[string]string
 	ages         map[string]string
-	resMap       map[int]*parse.Compet
+	resMap       map[int]*parse.ResultFin
 	ratingParMap map[int]*ratingParams
 	lastMsg      map[int64]int
 )
@@ -59,7 +59,7 @@ func main() {
 	}
 	bot.Debug = false
 	log.Printf("Auth on account %s", bot.Self.UserName)
-	resMap = make(map[int]*parse.Compet)
+	resMap = make(map[int]*parse.ResultFin)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
@@ -187,7 +187,7 @@ func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Clie
 
 func getRating(params ratingParams) string {
 	rfg := "rusfencing.ru"
-	res := parse.ParseRatings(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex))
+	res := parse.ParseLink(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex), false)
 	toSend := fmt.Sprintf("<a href=\"%s/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839\">Ссылка</a>\n", rfg, params.category, params.weapon, params.sex)
 	for _, v := range res {
 		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s	[%s]</a>", v.Place, v.Link, v.Name, v.Points)
@@ -196,19 +196,19 @@ func getRating(params ratingParams) string {
 }
 
 func getAllCompsResults() string {
-	res := parse.ParseCompetitions()
+	res := parse.ParseLink("/result.php", false)
 	toSend := ""
 	for i, v := range res {
 		resMap[i] = v
 	}
 	for i := 0; i < len(resMap); i++ {
-		toSend += fmt.Sprintf("%d. %s %s\n\n", i+1, resMap[i].Title, resMap[i].Categs)
+		toSend += fmt.Sprintf("%d. %s %s\n\n", i+1, resMap[i].Name, resMap[i].Categs)
 	}
 	return toSend
 }
 
 func getResultByLink(link string) []string {
-	res := parse.ParseResults(link)
+	res := parse.ParseLink(link, true)
 	all := make([]string, 0)
 	toSend := ""
 	if res == nil {
