@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	parse "Rusfencing_Telegram_bot/Parse"
 	firebase "firebase.google.com/go"
@@ -175,6 +176,7 @@ func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Clie
 		"name":       fmt.Sprintf("%s %s", update.Message.From.FirstName, update.Message.From.LastName),
 		"messageTxt": update.Message.Text,
 		"messageID":  update.Message.MessageID,
+		"time":       time.Now().String(),
 	})
 	if err != nil {
 		log.Println("add to firestore: ", err)
