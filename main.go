@@ -24,7 +24,7 @@ var (
 	weapons      map[string]string
 	s            map[string]string
 	ages         map[string]string
-	resMap       map[int]*parse.ResultFin
+	resMap       map[int]*parse.Result
 	ratingParMap map[int]*ratingParams
 	lastMsg      map[int64]int
 )
@@ -59,7 +59,7 @@ func main() {
 	}
 	bot.Debug = false
 	log.Printf("Auth on account %s", bot.Self.UserName)
-	resMap = make(map[int]*parse.ResultFin)
+	resMap = make(map[int]*parse.Result)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
@@ -119,7 +119,7 @@ func main() {
 					if len(resMap) < 5 {
 						_ = getAllCompsResults()
 					}
-					all = getResultByLink(resMap[i-1].Link)
+					all = getResultByLink(resMap[i-1].Link, resMap[i-1].Categs[2])
 				}
 			}
 			msg.DisableWebPagePreview = true
@@ -181,13 +181,9 @@ func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Clie
 	}
 }
 
-//func addText(update tgbotapi.Update) string {
-//	if update.
-//}
-
 func getRating(params ratingParams) string {
 	rfg := "rusfencing.ru"
-	res := parse.ParseLink(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex), false)
+	res := parse.ParseLink(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex), false, false)
 	toSend := fmt.Sprintf("<a href=\"%s/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839\">Ссылка</a>\n", rfg, params.category, params.weapon, params.sex)
 	for _, v := range res {
 		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s	[%s]</a>", v.Place, v.Link, v.Name, v.Points)
@@ -196,7 +192,7 @@ func getRating(params ratingParams) string {
 }
 
 func getAllCompsResults() string {
-	res := parse.ParseLink("/result.php", false)
+	res := parse.ParseLink("/result.php", false, false)
 	toSend := ""
 	for i, v := range res {
 		resMap[i] = v
@@ -207,29 +203,42 @@ func getAllCompsResults() string {
 	return toSend
 }
 
-func getResultByLink(link string) []string {
-	res := parse.ParseLink(link, true)
-	all := make([]string, 0)
-	toSend := ""
-	if res == nil {
-		return []string{fmt.Sprintf("Командные соревнования пока не получается смотреть. Вот вам ссылка: <a href=\"rusfencing.ru%s\">Результат</a>\n", link)}
+func getResultByLink(link string, categ string) []string {
+	if !(categ == "Командные") {
+		res := parse.ParseLink(link, true, false)
+		all := make([]string, 0)
+		toSend := ""
+		if res == nil {
+			return []string{fmt.Sprintf("Командные соревнования пока не получается смотреть. Вот вам ссылка: <a href=\"rusfencing.ru%s\">Результат</a>\n", link)}
+		}
+		toSend = fmt.Sprintf("<a href=\"rusfencing.ru%s\">Протокол</a>\n\n", link)
+		for _, v := range res[:len(res)/3] {
+			toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
+		}
+		all = append(all, toSend)
+		toSend = ""
+		for _, v := range res[len(res)/3 : len(res)*2/3] {
+			toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
+		}
+		all = append(all, toSend)
+		toSend = ""
+		for _, v := range res[len(res)*2/3:] {
+			toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
+		}
+		all = append(all, toSend)
+		return all
+	} else {
+		res := parse.ParseLink(link, true, true)
+		toSend := ""
+		for _, r := range res {
+			team := ""
+			for k, v := range r.TeamSquad {
+				team += fmt.Sprintf("<a href=\"%s\">%s</a>, ", v, k)
+			}
+			toSend += fmt.Sprintf("%s. %s (%s)\n", r.Place, r.Name, team)
+		}
+		return []string{toSend}
 	}
-	toSend = fmt.Sprintf("<a href=\"rusfencing.ru%s\">Протокол</a>\n\n", link)
-	for _, v := range res[:len(res)/3] {
-		toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
-	}
-	all = append(all, toSend)
-	toSend = ""
-	for _, v := range res[len(res)/3 : len(res)*2/3] {
-		toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
-	}
-	all = append(all, toSend)
-	toSend = ""
-	for _, v := range res[len(res)*2/3:] {
-		toSend += fmt.Sprintf("%s. <a href=\"rusfencing.ru%s\">%s</a>\n", v.Place, v.Link, v.Name)
-	}
-	all = append(all, toSend)
-	return all
 }
 
 func MainHandler(r http.ResponseWriter, _ *http.Request) {
