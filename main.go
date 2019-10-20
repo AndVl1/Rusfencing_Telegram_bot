@@ -237,6 +237,7 @@ func getResultByLink(link string, categ string) []string {
 			}
 			toSend += fmt.Sprintf("%s. %s (%s)\n", r.Place, r.Name, team)
 		}
+		log.Println(toSend)
 		return []string{toSend}
 	}
 }
