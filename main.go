@@ -228,17 +228,19 @@ func getResultByLink(link string, categ string) []string {
 		all = append(all, toSend)
 		return all
 	} else {
-		res := parse.ParseLink(link, true, true)
-		toSend := ""
-		for _, r := range res {
-			team := ""
-			for k, v := range r.TeamSquad {
-				team += fmt.Sprintf("<a href=\"%s\">%s</a>, ", "rusfencing.ru"+v, k)
-			}
-			toSend += fmt.Sprintf("%s. %s (%s)\n", r.Place, r.Name, team)
-		}
-		log.Println(toSend)
-		return []string{toSend}
+		//res := parse.ParseLink(link, true, true)
+		//toSend := ""
+		//for _, r := range res {
+		//	team := ""
+		//	for k, v := range r.TeamSquad {
+		//		team += fmt.Sprintf("<a href=\"%s\">%s</a>, ", "rusfencing.ru"+v, k)
+		//	}
+		//	toSend += fmt.Sprintf("%s. %s (%s)\n", r.Place, r.Name, team)
+		//}
+		//log.Println(toSend)
+		//return []string{toSend}
+		return []string{fmt.Sprintf("Разбор командных соревнований пока что в разработке (проблемы с разбором международных командных соревнований)"+
+			"\n<a href=\"rusfencing.ru%s\">Держите ссылку на протокол</a>", link)}
 	}
 }
 
