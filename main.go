@@ -179,6 +179,7 @@ func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Clie
 		"messageTxt": update.Message.Text,
 		"messageID":  update.Message.MessageID,
 		"time":       time.Now().Format(time.RFC822Z),
+		"chatID":     update.Message.Chat.ID,
 	})
 	if err != nil {
 		log.Println("add to firestore: ", err)
