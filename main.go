@@ -123,6 +123,11 @@ func main() {
 						_ = getAllCompsResults()
 					}
 					all = getResultByLink(resMap[i-1].Link, resMap[i-1].Categs[2])
+				} else {
+					msg.ChatID = 79365058
+					msg.Text = update.Message.From.FirstName + ": " + update.Message.Text
+					_, _ = bot.Send(msg)
+					return
 				}
 			}
 			msg.DisableWebPagePreview = true
