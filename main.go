@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Key err: ", err)
 	}
-	bot.Debug = true
+	bot.Debug = false
 	log.Printf("Auth on account %s", bot.Self.UserName)
 	resMap = make(map[int]*parse.Result)
 	updates := bot.ListenForWebhook("/" + bot.Token)
@@ -249,14 +249,25 @@ func getResultByLink(link string, categ string) []string {
 	} else {
 		res := parse.ParseLink(link, true, true)
 		toSend := ""
-		for _, r := range res {
+		all := make([]string, 0)
+		for _, r := range res[:len(res)/2] {
 			team := ""
 			for k, v := range r.TeamSquad {
 				team += fmt.Sprintf("<a href=\"%s\">%s</a>, ", v, k)
 			}
 			toSend += fmt.Sprintf("%s. %s (%s)\n", r.Place, r.Name, team)
 		}
-		return []string{toSend}
+		all = append(all, toSend)
+		toSend = ""
+		for _, r := range res[:len(res)/2] {
+			team := ""
+			for k, v := range r.TeamSquad {
+				team += fmt.Sprintf("<a href=\"%s\">%s</a>, ", v, k)
+			}
+			toSend += fmt.Sprintf("%s. %s (%s)\n", r.Place, r.Name, team)
+		}
+		all = append(all, toSend)
+		return all
 		//return []string{fmt.Sprintf("Разбор командных соревнований пока что в разработке (проблемы с разбором международных командных соревнований)"+
 		//	"\n<a href=\"rusfencing.ru%s\">Держите ссылку на протокол</a>", link)}
 	}
