@@ -126,16 +126,35 @@ func readItemFin(item *html.Node, isProtocol bool, isTeam bool) *Result {
 	return nil
 }
 
-func getTeam(item *html.Node) map[string]string {
-	res := make(map[string]string)
-	ch := getChildren(item.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling)
-	for _, c := range ch {
-		if isElem(c, "a") {
-			res[c.FirstChild.Data] = getAttr(c, "href")
-			//fmt.Println(c)
+func getTeam(item *html.Node) (res map[string]string) {
+	res = make(map[string]string)
+	defer func(res map[string]string) {
+		if x := recover(); x != nil {
+			if !isText(item.NextSibling.NextSibling.NextSibling.NextSibling.FirstChild) {
+				ch := getChildren(item.NextSibling.NextSibling.NextSibling.NextSibling)
+				for _, c := range ch {
+					if isElem(c, "a") {
+						res[c.FirstChild.Data] = getAttr(c, "href")
+						//fmt.Println(c)
+						//res = &res2
+					}
+				}
+			} else {
+				res[item.NextSibling.NextSibling.NextSibling.NextSibling.FirstChild.Data] = ""
+			}
 		}
+	}(res)
+	if !isText(item.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling.FirstChild) {
+		ch := getChildren(item.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling)
+		for _, c := range ch {
+			if isElem(c, "a") {
+				res[c.FirstChild.Data] = getAttr(c, "href")
+			}
+		}
+	} else {
+		res[item.NextSibling.NextSibling.NextSibling.NextSibling.FirstChild.Data] = ""
 	}
-	return res
+	return
 }
 
 func getCat(item *html.Node) []string {
