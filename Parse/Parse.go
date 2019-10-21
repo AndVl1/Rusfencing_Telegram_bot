@@ -94,7 +94,7 @@ func readItemFin(item *html.Node, isProtocol bool, isTeam bool) *Result {
 		} else if isProtocol && (isText(cs[0].FirstChild) || isText(cs[0])) {
 			return &Result{
 				Name:   cs[0].FirstChild.Data,
-				Link:   getAttr(a, "href"),
+				Link:   "rusfencing.ru" + getAttr(a, "href"),
 				Points: "",
 				Place:  a.Parent.PrevSibling.PrevSibling.PrevSibling.PrevSibling.FirstChild.Data,
 				Categs: nil,
