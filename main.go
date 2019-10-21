@@ -71,6 +71,7 @@ func main() {
 					msg.ChatID = 79365058
 					msg.Text = fmt.Sprint(x)
 					_, _ = bot.Send(msg)
+					addErrorToDb(ctx, update, client, x)
 				}
 			}()
 			if update.CallbackQuery != nil {
@@ -184,6 +185,19 @@ func initFirestore(ctx context.Context) *firestore.Client {
 		log.Println(err)
 	}
 	return client
+}
+
+func addErrorToDb(ctx context.Context, update tgbotapi.Update, client *firestore.Client, error interface{}) {
+	_, _, err := client.Collection(fmt.Sprint(error)).Add(ctx, map[string]interface{}{
+		"chatID": update.Message.Chat.ID,
+		"name":   fmt.Sprintf("%s %s", update.Message.From.FirstName, update.Message.From.LastName),
+		"msgID":  update.Message.MessageID,
+		"msgTxt": update.Message.Text,
+		"time":   time.Now().Format(time.RFC822Z),
+	})
+	if err != nil {
+		log.Println("add to firestore", err)
+	}
 }
 
 func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Client) {
