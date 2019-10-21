@@ -259,7 +259,7 @@ func getResultByLink(link string, categ string) []string {
 		}
 		all = append(all, toSend)
 		toSend = ""
-		for _, r := range res[:len(res)/2] {
+		for _, r := range res[len(res)/2:] {
 			team := ""
 			for k, v := range r.TeamSquad {
 				team += fmt.Sprintf("<a href=\"%s\">%s</a>, ", v, k)
