@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Key err: ", err)
 	}
-	bot.Debug = false
+	bot.Debug = true
 	log.Printf("Auth on account %s", bot.Self.UserName)
 	resMap = make(map[int]*parse.Result)
 	updates := bot.ListenForWebhook("/" + bot.Token)
@@ -131,7 +131,7 @@ func main() {
 						_ = getAllCompsResults()
 					}
 					all = getResultByLink(resMap[i-1].Link, resMap[i-1].Categs[2])
-					log.Println(all)
+					log.Println(len(all[0]))
 				} else {
 					msg.ChatID = 79365058
 					msg.Text = update.Message.From.FirstName + ": " + update.Message.Text
