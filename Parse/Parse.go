@@ -134,9 +134,7 @@ func getTeam(item *html.Node) (res map[string]string) {
 				ch := getChildren(item.NextSibling.NextSibling.NextSibling.NextSibling)
 				for _, c := range ch {
 					if isElem(c, "a") {
-						res[c.FirstChild.Data] = getAttr(c, "href")
-						//fmt.Println(c)
-						//res = &res2
+						res[c.FirstChild.Data] = "rusfencing.ru" + getAttr(c, "href")
 					}
 				}
 			} else {
