@@ -64,6 +64,15 @@ func main() {
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
+			defer func() {
+				if x := recover(); x != nil {
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Произошла какая-то ошибка. Попробуйте еще раз")
+					_, _ = bot.Send(msg)
+					msg.ChatID = 79365058
+					msg.Text = fmt.Sprint(x)
+					_, _ = bot.Send(msg)
+				}
+			}()
 			if update.CallbackQuery != nil {
 				var query = update.CallbackQuery.Data
 				if query == "495" || query == "496" || query == "498" {
@@ -122,6 +131,7 @@ func main() {
 						_ = getAllCompsResults()
 					}
 					all = getResultByLink(resMap[i-1].Link, resMap[i-1].Categs[2])
+					log.Println(all)
 				} else {
 					msg.ChatID = 79365058
 					msg.Text = update.Message.From.FirstName + ": " + update.Message.Text
@@ -246,7 +256,6 @@ func getResultByLink(link string, categ string) []string {
 			}
 			toSend += fmt.Sprintf("%s. %s (%s)\n", r.Place, r.Name, team)
 		}
-		log.Println(toSend)
 		return []string{toSend}
 		//return []string{fmt.Sprintf("Разбор командных соревнований пока что в разработке (проблемы с разбором международных командных соревнований)"+
 		//	"\n<a href=\"rusfencing.ru%s\">Держите ссылку на протокол</a>", link)}
