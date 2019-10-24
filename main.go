@@ -188,7 +188,8 @@ func initFirestore(ctx context.Context) *firestore.Client {
 }
 
 func addErrorToDb(ctx context.Context, update tgbotapi.Update, client *firestore.Client, error interface{}) {
-	_, _, err := client.Collection(fmt.Sprint(error)).Add(ctx, map[string]interface{}{
+	_, _, err := client.Collection("errors").Add(ctx, map[string]interface{}{
+		"error":  fmt.Sprint(error),
 		"chatID": update.Message.Chat.ID,
 		"name":   fmt.Sprintf("%s %s", update.Message.From.FirstName, update.Message.From.LastName),
 		"msgID":  update.Message.MessageID,
