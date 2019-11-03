@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -207,9 +206,7 @@ func getUsers(ctx context.Context, client *firestore.Client) {
 		if data != nil {
 			log.Println(data)
 		}
-		id, _ := strconv.ParseInt(fmt.Sprintln(data), 10, 64)
-		log.Println(id, reflect.TypeOf(id))
-		res = append(res, id)
+		res = append(res, data.(int64))
 		log.Println(res)
 	}
 	users = res
