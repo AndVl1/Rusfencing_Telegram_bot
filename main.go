@@ -206,7 +206,7 @@ func getUsers(ctx context.Context, client *firestore.Client) {
 		if data != nil {
 			log.Println(data)
 		}
-		id, _ := strconv.ParseInt(fmt.Sprintln(data), 10, 32)
+		id, _ := strconv.ParseInt(fmt.Sprintln(data), 10, 64)
 		res = append(res, id)
 		log.Println(res)
 	}
