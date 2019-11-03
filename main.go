@@ -142,7 +142,6 @@ func main() {
 						_ = getAllCompsResults()
 					}
 					all = getResultByLink(resMap[i-1].Link, resMap[i-1].Categs[2])
-					log.Println(len(all[0]))
 				} else {
 					msg.ChatID = 79365058
 					msg.Text = update.Message.From.FirstName + ": " + update.Message.Text
@@ -203,11 +202,7 @@ func getUsers(ctx context.Context, client *firestore.Client) {
 			log.Panic(err)
 		}
 		data, _ := doc.DataAt("id")
-		if data != nil {
-			log.Println(data)
-		}
 		res = append(res, data.(int64))
-		log.Println(res)
 	}
 	users = res
 }
