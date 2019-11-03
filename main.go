@@ -204,10 +204,11 @@ func getUsers(ctx context.Context, client *firestore.Client) {
 		}
 		data, _ := doc.DataAt("id")
 		if data != nil {
-			fmt.Println(data)
+			log.Println(data)
 		}
 		id, _ := strconv.ParseInt(fmt.Sprintln(data), 10, 32)
 		res = append(res, id)
+		log.Println(res)
 	}
 	users = res
 }
