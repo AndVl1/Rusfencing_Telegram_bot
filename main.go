@@ -185,6 +185,7 @@ func main() {
 func mailing(ctx context.Context, client *firestore.Client, bot tgbotapi.BotAPI, text string) {
 	getUsers(ctx, client)
 	for _, user := range users {
+		log.Println(user, text)
 		msg := tgbotapi.NewMessage(user, text)
 		_, _ = bot.Send(msg)
 	}
