@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"fmt"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"log"
 	"net/http"
@@ -22,6 +23,7 @@ type ratingParams struct {
 }
 
 var (
+	users        []int64
 	weapons      map[string]string
 	s            map[string]string
 	ages         map[string]string
@@ -111,6 +113,12 @@ func main() {
 			go addToDB(ctx, update, client)
 			if cmd := update.Message.Command(); cmd != "" {
 				switch cmd {
+				case "mailing":
+					if update.Message.From.UserName == "AndVl1" {
+						mailing(ctx, client, *bot, update.Message.Text)
+					} else {
+						all = []string{"У вас нет доступа к этой команде"}
+					}
 				case "start":
 					addUserToDB(ctx, update, client)
 				case "results":
@@ -174,24 +182,34 @@ func main() {
 	}
 }
 
-//func mailing(ctx context.Context, client *firestore.Client, bot tgbotapi.BotAPI, msg string) {
-//	list, _ := client.Collections(ctx).GetAll()
-//	for it := range list {
-//
-//	}
-//}
+func mailing(ctx context.Context, client *firestore.Client, bot tgbotapi.BotAPI, text string) {
+	getUsers(ctx, client)
+	for _, user := range users {
+		msg := tgbotapi.NewMessage(user, text)
+		_, _ = bot.Send(msg)
+	}
+}
 
-//func getUsers(ctx context.Context, client *firestore.Client) {
-//	iter := client.Collection("users").Documents(ctx)
-//	res := make([]int64, 0)
-//	for {
-//		doc, err := iter.Next()
-//		if err == iterator.Done {
-//			break
-//		}
-//		res = append(res, doc.Data())
-//	}
-//}
+func getUsers(ctx context.Context, client *firestore.Client) {
+	iter := client.Collection("users").Documents(ctx)
+	res := make([]int64, 0)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Panic(err)
+		}
+		data, _ := doc.DataAt("id")
+		if data != nil {
+			fmt.Println(data)
+		}
+		id, _ := strconv.ParseInt(fmt.Sprintln(data), 10, 32)
+		res = append(res, id)
+	}
+	users = res
+}
 
 func addUserToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Client) {
 	_, _, err := client.Collection("users").Add(ctx, map[string]interface{}{
