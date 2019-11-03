@@ -111,6 +111,8 @@ func main() {
 			go addToDB(ctx, update, client)
 			if cmd := update.Message.Command(); cmd != "" {
 				switch cmd {
+				case "start":
+					addUserToDB(ctx, update, client)
 				case "results":
 					all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
 				case "rating":
@@ -172,6 +174,36 @@ func main() {
 	}
 }
 
+//func mailing(ctx context.Context, client *firestore.Client, bot tgbotapi.BotAPI, msg string) {
+//	list, _ := client.Collections(ctx).GetAll()
+//	for it := range list {
+//
+//	}
+//}
+
+//func getUsers(ctx context.Context, client *firestore.Client) {
+//	iter := client.Collection("users").Documents(ctx)
+//	res := make([]int64, 0)
+//	for {
+//		doc, err := iter.Next()
+//		if err == iterator.Done {
+//			break
+//		}
+//		res = append(res, doc.Data())
+//	}
+//}
+
+func addUserToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Client) {
+	_, _, err := client.Collection("users").Add(ctx, map[string]interface{}{
+		"name": fmt.Sprintf("%s %s", update.Message.From.FirstName, update.Message.From.LastName),
+		"id":   update.Message.Chat.ID,
+	})
+	//client.Collection("users").Documents(ctx)
+	if err != nil {
+		log.Println("add to firestore: ", err)
+	}
+}
+
 func initFirestore(ctx context.Context) *firestore.Client {
 	//sa := option.WithCredentialsFile(os.Getenv("HOME") + "/firebaseKey.json")
 	sa := option.WithCredentialsJSON([]byte(os.Getenv("firebaseKey")))
@@ -210,6 +242,7 @@ func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Clie
 		"time":       time.Now().Format(time.RFC822Z),
 		"chatID":     update.Message.Chat.ID,
 	})
+	//client.Collection("users").Documents(ctx)
 	if err != nil {
 		log.Println("add to firestore: ", err)
 	}
