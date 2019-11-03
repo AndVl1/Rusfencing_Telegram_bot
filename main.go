@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -207,6 +208,7 @@ func getUsers(ctx context.Context, client *firestore.Client) {
 			log.Println(data)
 		}
 		id, _ := strconv.ParseInt(fmt.Sprintln(data), 10, 64)
+		log.Println(id, reflect.TypeOf(id))
 		res = append(res, id)
 		log.Println(res)
 	}
