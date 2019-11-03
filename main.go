@@ -115,7 +115,7 @@ func main() {
 				switch cmd {
 				case "mailing":
 					if update.Message.From.UserName == "AndVl1" {
-						mailing(ctx, client, *bot, update.Message.Text)
+						mailing(ctx, client, *bot, update.Message.CommandArguments())
 					} else {
 						all = []string{"У вас нет доступа к этой команде"}
 					}
