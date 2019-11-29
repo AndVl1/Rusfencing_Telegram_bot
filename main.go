@@ -134,7 +134,7 @@ func main() {
 					lastMsg[update.Message.Chat.ID] = update.Message.MessageID
 				case "help":
 					all = []string{"Доступные команды:\n/results - получить список последних соревнований\n/rating - получить текущую ситуацию системы отбора" +
-						"\n/contact - связь с разработчиком данного бота"}
+						"\n/contacts - связь с разработчиком данного бота"}
 				case "contacts":
 					all = []string{"Связаться со мной можно в телеграме (@AndVl1) или IG (instagram.com/and.vladislavov)\nТакже можете писать напрямую в бота"}
 				}
