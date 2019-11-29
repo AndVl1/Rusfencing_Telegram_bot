@@ -61,7 +61,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Key err: ", err)
 	}
-	bot.Debug = false
+	bot.Debug = true
 	log.Printf("Auth on account %s", bot.Self.UserName)
 	resMap = make(map[int]*parse.Result)
 	updates := bot.ListenForWebhook("/" + bot.Token)
@@ -190,7 +190,10 @@ func response(bot tgbotapi.BotAPI, text []string) {
 	id, _ := strconv.Atoi(text[0])
 	msg := tgbotapi.NewMessage(int64(id), strings.Join(text[1:], " "))
 	log.Println(msg)
-	_, _ = bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func mailing(ctx context.Context, client *firestore.Client, bot tgbotapi.BotAPI, text string) {
