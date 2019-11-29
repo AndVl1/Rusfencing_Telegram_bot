@@ -186,7 +186,9 @@ func main() {
 }
 
 func response(bot tgbotapi.BotAPI, text []string) {
+	log.Println(text)
 	id, _ := strconv.Atoi(text[0])
+	log.Println(id)
 	msg := tgbotapi.NewMessage(int64(id), strings.Join(text[0:], " "))
 	_, _ = bot.Send(msg)
 }
