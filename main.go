@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	parse "Rusfencing_Telegram_bot/Parse"
@@ -113,6 +114,9 @@ func main() {
 			go addToDB(ctx, update, client)
 			if cmd := update.Message.Command(); cmd != "" {
 				switch cmd {
+				case "response":
+					args := strings.Split(update.Message.CommandArguments(), " ")
+					response(*bot, args)
 				case "mailing":
 					if update.Message.From.UserName == "AndVl1" {
 						mailing(ctx, client, *bot, update.Message.CommandArguments())
@@ -144,7 +148,7 @@ func main() {
 					all = getResultByLink(resMap[i-1].Link, resMap[i-1].Categs[2])
 				} else {
 					msg.ChatID = 79365058
-					msg.Text = update.Message.From.FirstName + ": " + update.Message.Text
+					msg.Text = fmt.Sprintf("[%d] %s: %s", update.Message.From.ID, update.Message.From.FirstName, update.Message.Text)
 					_, _ = bot.Send(msg)
 					return
 				}
@@ -179,6 +183,12 @@ func main() {
 			}
 		}(update)
 	}
+}
+
+func response(bot tgbotapi.BotAPI, text []string) {
+	id, _ := strconv.Atoi(text[0])
+	msg := tgbotapi.NewMessage(int64(id), strings.Join(text[0:], " "))
+	_, _ = bot.Send(msg)
 }
 
 func mailing(ctx context.Context, client *firestore.Client, bot tgbotapi.BotAPI, text string) {
