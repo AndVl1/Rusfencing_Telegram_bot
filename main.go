@@ -138,7 +138,7 @@ func main() {
 				case "contacts":
 					all = []string{"Связаться со мной можно в телеграме (@AndVl1) или IG (instagram.com/and.vladislavov)\nТакже можете писать напрямую в бота"}
 				case "scoringapp":
-					all = []string{"Последняя версия приложения: <a href=\"https://t.me/fence_apps/13\">0.2.1</a>"}
+					all = []string{fmt.Sprintf("Последняя версия приложения: <a href=\"%s\">%s</a>", os.Getenv("appLink"), os.Getenv("appVersion"))}
 				}
 			} else {
 				if update.Message.Text == "/start" {
