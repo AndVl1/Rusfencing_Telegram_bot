@@ -115,8 +115,12 @@ func main() {
 			if cmd := update.Message.Command(); cmd != "" {
 				switch cmd {
 				case "response":
-					args := strings.Split(update.Message.CommandArguments(), " ")
-					response(*bot, args)
+					if update.Message.From.UserName == "AndVl1" {
+						args := strings.Split(update.Message.CommandArguments(), " ")
+						response(*bot, args)
+					} else {
+						all = []string{"У вас нет доступа к этой команде"}
+					}
 				case "mailing":
 					if update.Message.From.UserName == "AndVl1" {
 						mailing(ctx, client, *bot, update.Message.CommandArguments())
@@ -191,7 +195,11 @@ func response(bot tgbotapi.BotAPI, text []string) {
 	log.Println(text)
 	id, _ := strconv.Atoi(text[0])
 	msg := tgbotapi.NewMessage(int64(id), strings.Join(text[1:], " "))
-	_, _ = bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		msg = tgbotapi.NewMessage(int64(79365058), err.Error())
+		_, _ = bot.Send(msg)
+	}
 }
 
 func mailing(ctx context.Context, client *firestore.Client, bot tgbotapi.BotAPI, text string) {
