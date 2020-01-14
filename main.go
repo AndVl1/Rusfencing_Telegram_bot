@@ -131,6 +131,9 @@ func main() {
 					addUserToDB(ctx, update, client)
 				case "results":
 					all = []string{getAllCompsResults() + "\nВведите номер турнира, результат которого вам интересен"}
+				case "calendar":
+					link := fmt.Sprintf("http://rusfencing.ru/calendar.php?SEASON=2028839&DATE_FROM=%d.%d.%d&DATE_TO=&PAGEN_1=1", time.Now().Day(), int(time.Now().Month()), time.Now().Year())
+					all = []string{fmt.Sprintf("<a href=\"%s\">Календарь</a>", link)}
 				case "rating":
 					all = []string{"Выбирете интересующие вас параметры"}
 					msg.ReplyToMessageID = update.Message.MessageID
