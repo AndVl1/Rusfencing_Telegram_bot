@@ -313,10 +313,7 @@ func getResultByLink(link string, categ string) []string {
 		res := parse.ParseLink(link, true, false)
 		all := make([]string, 0)
 		toSend := ""
-		if res == nil {
-			return []string{fmt.Sprintf("Командные соревнования пока не получается смотреть. Вот вам ссылка: <a href=\"rusfencing.ru%s\">Результат</a>\n", link)}
-		}
-		toSend = fmt.Sprintf("<a href=\"rusfencing.ru%s\">Протокол</a>\n\n", link)
+		toSend = fmt.Sprintf("<a href=\"rusfencing.ru%s\">ТАБЛО</a>\n\n", strings.Replace(link, "protocol", "tablo", 1))
 		for _, v := range res[:len(res)/3] {
 			toSend += fmt.Sprintf("%s. <a href=\"%s\">%s</a>\n", v.Place, v.Link, v.Name)
 		}
