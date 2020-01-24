@@ -4,3 +4,5 @@ test.go
 firebaseTest.go
 
 log.txt
+
+*.pdf
