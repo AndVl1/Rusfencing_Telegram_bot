@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	parse "Rusfencing_Telegram_bot/Parse"
 	firebase "firebase.google.com/go"
 	tgbotapi "github.com/Syfaro/telegram-bot-api"
 )
@@ -28,7 +27,7 @@ var (
 	weapons      map[string]string
 	s            map[string]string
 	ages         map[string]string
-	resMap       map[int]*parse.Result
+	resMap       map[int]*Result
 	ratingParMap map[int]*ratingParams
 	lastMsg      map[int64]int
 )
@@ -63,7 +62,7 @@ func main() {
 	}
 	bot.Debug = false
 	log.Printf("Auth on account %s", bot.Self.UserName)
-	resMap = make(map[int]*parse.Result)
+	resMap = make(map[int]*Result)
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	for update := range updates {
 		go func(update tgbotapi.Update) {
@@ -288,7 +287,7 @@ func addToDB(ctx context.Context, update tgbotapi.Update, client *firestore.Clie
 
 func getRating(params ratingParams) string {
 	rfg := "rusfencing.ru"
-	res := parse.ParseLink(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex), false, false)
+	res := ParseLink(fmt.Sprintf("/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839", params.category, params.weapon, params.sex), false, false)
 	toSend := fmt.Sprintf("<a href=\"%s/rating.php?AGE=%s&WEAPON=%s&SEX=%s&SEASON=2028839\">Ссылка</a>\n", rfg, params.category, params.weapon, params.sex)
 	for _, v := range res {
 		toSend += fmt.Sprintf("\n%s.<a href=\"rusfencing.ru%s\"> %s	[%s]</a>", v.Place, v.Link, v.Name, v.Points)
@@ -297,7 +296,7 @@ func getRating(params ratingParams) string {
 }
 
 func getAllCompsResults() string {
-	res := parse.ParseLink("/result.php", false, false)
+	res := ParseLink("/result.php", false, false)
 	toSend := ""
 	for i, v := range res {
 		resMap[i] = v
@@ -310,7 +309,7 @@ func getAllCompsResults() string {
 
 func getResultByLink(link string, categ string) []string {
 	if !(categ == "Командные") {
-		res := parse.ParseLink(link, true, false)
+		res := ParseLink(link, true, false)
 		all := make([]string, 0)
 		toSend := ""
 		toSend = fmt.Sprintf("<a href=\"rusfencing.ru%s\">ТАБЛО</a>\n\n", strings.Replace(link, "protocol", "tablo", 1))
@@ -330,7 +329,7 @@ func getResultByLink(link string, categ string) []string {
 		all = append(all, toSend)
 		return all
 	} else {
-		res := parse.ParseLink(link, true, true)
+		res := ParseLink(link, true, true)
 		toSend := ""
 		all := make([]string, 0)
 		for _, r := range res[:len(res)/2] {
